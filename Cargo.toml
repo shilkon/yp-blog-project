@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "crates/blog-server",
+    "crates/blog-client",
+    "crates/blog-cli",
+    "crates/blog-wasm",
+]
+resolver = "2" 
+
+[workspace.dependencies]
