@@ -1,4 +1,5 @@
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, Scope, delete, get, post, put, web};
+use actix_web::{HttpResponse, Scope, delete, get, post, put, web};
+use actix_web_httpauth::middleware::HttpAuthentication;
 use tracing::info;
 use uuid::Uuid;
 
@@ -6,25 +7,63 @@ use crate::domain::error::BlogError;
 use crate::application::blog_service::BlogService;
 // use crate::application::exchange_service::ExchangeService;
 use crate::data::post_repository::PostgresPostRepository;
-use crate::presentation::middleware::AuthenticatedUser;
+use crate::presentation::middleware::{AuthenticatedUser, jwt_validator};
 use crate::presentation::dto::{
-    CreatePostRequest, PostResponse, UpdatePostRequest
+    CreatePostRequest, GetPostsRequest, PostResponse, PostsResponse, UpdatePostRequest
 };
 
 pub fn scope() -> Scope {
     web::scope("/posts")
-        .service(create_post)
-        .service(update_post)
-        .service(delete_post)
+        .service(get_post)
+        .service(list_posts)
+        .service(
+            web::scope("")
+                .wrap(HttpAuthentication::bearer(jwt_validator))
+                .service(create_post)
+                .service(update_post)
+                .service(delete_post)
+        )
 }
 
-// fn ensure_owner(account: &AccountResponse, user: &AuthenticatedUser) -> Result<(), BankError> {
-//     if account.owner_id != user.id {
-//         Err(BankError::Unauthorized)
-//     } else {
-//         Ok(())
-//     }
-// }
+#[get("/{id}")]
+async fn get_post(
+    service: web::Data<BlogService<PostgresPostRepository>>,
+    path: web::Path<Uuid>
+) -> Result<HttpResponse, BlogError> {
+    let id = path.into_inner();
+    let post = service.get_post(id).await?;
+
+    info!(
+        post_id = %post.id.to_string(),
+        "post fetched"
+    );
+
+    Ok(HttpResponse::Ok().json(PostResponse::from(post)))
+}
+
+#[get("")]
+async fn list_posts(
+    service: web::Data<BlogService<PostgresPostRepository>>,
+    query: web::Query<GetPostsRequest>
+) -> Result<HttpResponse, BlogError> {
+    let limit = query.limit;
+    let offset = query.offset;
+    let posts = service.list_posts(limit, offset).await?;
+
+    info!(
+        limit = %limit,
+        offset = %offset,
+        "posts fetched"
+    );
+
+    let total = posts.len() as u64;
+    Ok(HttpResponse::Ok().json(PostsResponse {
+        posts,
+        total,
+        limit,
+        offset
+    }))
+}
 
 #[post("")]
 async fn create_post(
@@ -45,7 +84,7 @@ async fn create_post(
     Ok(HttpResponse::Created().json(PostResponse::from(post)))
 }
 
-#[put("")]
+#[put("/{id}")]
 async fn update_post(
     service: web::Data<BlogService<PostgresPostRepository>>,
     path: web::Path<Uuid>,
@@ -65,7 +104,7 @@ async fn update_post(
     Ok(HttpResponse::Ok().json(PostResponse::from(post)))
 }
 
-#[delete("")]
+#[delete("{id}")]
 async fn delete_post(
     service: web::Data<BlogService<PostgresPostRepository>>,
     path: web::Path<Uuid>,

@@ -48,7 +48,7 @@ pub struct GetPostsRequest {
 }
 
 fn default_limit() -> i64 { DEFAULT_LIMIT }
-fn default_offset() -> i64 { DEFAULT_LIMIT }
+fn default_offset() -> i64 { DEFAULT_OFFSET }
 
 #[derive(Debug, Serialize)]
 pub struct PostResponse {

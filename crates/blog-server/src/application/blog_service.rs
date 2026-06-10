@@ -32,14 +32,11 @@ where
             .and_then(|p| p.ok_or_else(|| BlogError::NotFound(format!("post {}", id))))
     }
 
-    pub async fn get_user_post(&self, user_id: Uuid, id: Uuid) -> Result<Post, BlogError> {
-        let post = self.get_post(id).await?;
-
-        if post.author_id != user_id {
+    pub async fn enshure_owners_post(&self, user_id: Uuid, id: Uuid) -> Result<(), BlogError> {
+        if user_id != self.get_post(id).await?.author_id {
             return Err(BlogError::Forbidden(format!("post {}", id)));
         }
-
-        Ok(post)
+        Ok(())
     }
 
     pub async fn update_post(
@@ -49,7 +46,7 @@ where
         title: &str,
         content: &str
     ) -> Result<Post, BlogError> {
-        self.get_user_post(user_id, id).await?;
+        self.enshure_owners_post(user_id, id).await?;
 
         self.repo.update(id, title, content).await.map_err(BlogError::from)
             .and_then(|p| p.ok_or_else(|| BlogError::NotFound(format!("post {}", id))))
@@ -60,7 +57,7 @@ where
         user_id: Uuid,
         id: Uuid
     ) -> Result<(), BlogError> {
-        self.get_user_post(user_id, id).await?;
+        self.enshure_owners_post(user_id, id).await?;
 
         self.repo.delete(id).await.map_err(BlogError::from)
     }

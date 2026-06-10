@@ -8,7 +8,7 @@ pub struct AppConfig {
     pub jwt_secret: String,
     #[serde(default)]
     pub cors_origins: Vec<String>,
-    pub exchange_api_url: String,
+    // pub exchange_api_url: String,
 }
 
 impl AppConfig {
@@ -39,7 +39,7 @@ impl AppConfig {
             database_url,
             jwt_secret,
             cors_origins,
-            exchange_api_url,
+            // exchange_api_url,
         })
     }
 }

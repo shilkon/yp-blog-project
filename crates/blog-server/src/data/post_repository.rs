@@ -48,7 +48,7 @@ impl PostRepository for PostgresPostRepository {
     async fn create(&self, mut post: Post) -> Result<Post, DomainError> {
         let row = sqlx::query(
             r#"
-            INSERT INTO posts (id, author_id, title, content, created_at, updated_at)
+            INSERT INTO posts (id, author_id, title, content)
             VALUES ($1, $2, $3, $4)
             RETURNING *
             "#,
@@ -64,9 +64,7 @@ impl PostRepository for PostgresPostRepository {
             DomainError::Internal(format!("database error: {}", e))
         })?;
 
-        post = row.try_into()?;
-        info!(post_id = %post.id, author_id = %post.author_id, "post created");
-        Ok(post)
+        row.try_into()
     }
 
     async fn get(&self, id: Uuid) -> Result<Option<Post>, DomainError> {
@@ -84,10 +82,7 @@ impl PostRepository for PostgresPostRepository {
             DomainError::Internal(format!("database error: {}", e))
         })?;
 
-        match found_row {
-            Some(row) => Ok(Some(row.try_into()?)),
-            None => Ok(None)
-        }
+        found_row.map(|row| row.try_into()).transpose()
     }
 
     async fn update(&self, id: Uuid, title: &str, content: &str) -> Result<Option<Post>, DomainError> {
@@ -112,14 +107,7 @@ impl PostRepository for PostgresPostRepository {
             DomainError::Internal(format!("database error: {}", e))
         })?;
 
-        match updated_row {
-            Some(row) => {
-                let post: Post = row.try_into()?;
-                info!(post_id = %post.id, author_id = %post.author_id, "post updated");
-                Ok(Some(post))
-            },
-            None => Ok(None)
-        }
+        updated_row.map(|row| row.try_into()).transpose()
     }
 
     async fn delete(&self, id: Uuid) -> Result<(), DomainError> {

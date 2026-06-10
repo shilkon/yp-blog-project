@@ -63,12 +63,8 @@ async fn main() -> std::io::Result<()> {
             // .app_data(web::Data::new(exchange_service.clone()))
             .service(
                 web::scope("/api")
-                    .service(handlers::public::scope())
-                    .service(
-                        web::scope("")
-                            .wrap(HttpAuthentication::bearer(jwt_validator))
-                            .service(handlers::protected::scope()),
-                    ),
+                    .service(handlers::auth::scope())
+                    .service(handlers::post::scope())
             )
     })
     .bind((config.host.as_str(), config.port))?
