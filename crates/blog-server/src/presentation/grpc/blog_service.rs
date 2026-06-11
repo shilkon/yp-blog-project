@@ -15,7 +15,7 @@ use crate::blog_proto::{
     PostIdRequest,
     RegisterRequest,
     UpdatePostRequest,
-    UserResponse,
+    AuthResponse,
     DeletePostResponse,
     ListPostsRequest,
     ListPostsResponse
@@ -92,7 +92,7 @@ where
     async fn register(
         &self,
         request: Request<RegisterRequest>
-    ) -> Result<Response<UserResponse>, Status> {
+    ) -> Result<Response<AuthResponse>, Status> {
         let req = request.into_inner();
         let user = self.auth_service
             .register(&req.username, &req.email, &req.password)
@@ -104,7 +104,7 @@ where
         
         info!(username = %user.username, "user logged in");
 
-        Ok(Response::new(UserResponse {
+        Ok(Response::new(AuthResponse {
             token,
             user: Some(user.into())
         }))
@@ -113,14 +113,14 @@ where
     async fn login(
         &self,
         request: Request<LoginRequest>
-    ) ->  Result<Response<UserResponse>, Status> {
+    ) ->  Result<Response<AuthResponse>, Status> {
         let req = request.into_inner();
 
         let (token, user) = self.auth_service.login(&req.username, &req.password).await?;
 
         info!(username = %req.username, "user logged in");
 
-        Ok(Response::new(UserResponse {
+        Ok(Response::new(AuthResponse {
             token,
             user: Some(user.into())
         }))

@@ -4,7 +4,7 @@ use tracing::info;
 use crate::application::auth_service::AuthService;
 use crate::data::user_repository::PostgresUserRepository;
 use crate::domain::error::BlogError;
-use crate::presentation::dto::{LoginRequest, RegisterRequest, UserResponse};
+use crate::presentation::dto::{LoginRequest, RegisterRequest, AuthResponse};
 
 pub fn scope() -> Scope {
     web::scope("/auth")
@@ -27,7 +27,7 @@ async fn register(
     
     info!(username = %user.username, "user logged in");
 
-    Ok(HttpResponse::Created().json(UserResponse {
+    Ok(HttpResponse::Created().json(AuthResponse {
         token,
         user
     }))
@@ -40,7 +40,7 @@ async fn login(
 ) -> Result<impl Responder, BlogError> {
     let (token, user) = service.login(&payload.username, &payload.password).await?;
     info!(username = %payload.username, "user logged in");
-    Ok(HttpResponse::Ok().json(UserResponse {
+    Ok(HttpResponse::Ok().json(AuthResponse {
         token,
         user
     }))

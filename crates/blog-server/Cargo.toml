@@ -15,20 +15,20 @@ actix-web-httpauth = "0.8"
 anyhow = "1.0"
 argon2 = { version = "0.5", features = ["std"] }
 async-trait = "0.1"
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { workspace = true }
 dotenvy = "0.15"
 jsonwebtoken = { version = "10.4", features = ["rust_crypto"] }
-prost = "0.14"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+prost = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 sqlx = { version = "0.9", features = ["postgres", "chrono", "uuid", "macros", "runtime-tokio"] }
-thiserror = "2.0"
-tokio = { version = "1.52", features = ["macros", "rt-multi-thread"] }
-tonic = "0.14"
-tonic-prost = "0.14"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "chrono", "time"] }
-uuid = { version = "1.23", features = ["v4", "serde"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tonic = { workspace = true }
+tonic-prost = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
 
 [build-dependencies]
-tonic-prost-build = "0.14"
+tonic-prost-build = { workspace = true }

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::domain::{post::Post, user::User};
 
 #[derive(Debug, Serialize)]
-pub struct UserResponse {
+pub struct AuthResponse {
     pub token: String,
     pub user: User,
 }
@@ -22,13 +22,7 @@ pub struct LoginRequest {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CreatePostRequest {
-    pub title: String,
-    pub content: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdatePostRequest {
+pub struct ModifyPostRequest {
     pub title: String,
     pub content: String,
 }

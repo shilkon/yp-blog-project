@@ -10,7 +10,7 @@ use crate::data::post_repository::PostgresPostRepository;
 use crate::domain::user::AuthenticatedUser;
 use crate::presentation::middleware::jwt_validator;
 use crate::presentation::dto::{
-    CreatePostRequest, GetPostsRequest, PostsResponse, UpdatePostRequest
+    ModifyPostRequest, GetPostsRequest, PostsResponse
 };
 
 pub fn scope() -> Scope {
@@ -70,7 +70,7 @@ async fn list_posts(
 async fn create_post(
     service: web::Data<BlogService<PostgresPostRepository>>,
     user: AuthenticatedUser,
-    payload: web::Json<CreatePostRequest>
+    payload: web::Json<ModifyPostRequest>
 ) -> Result<HttpResponse, BlogError> {
     let post = service
         .create_post(user.user_id, &payload.title, &payload.content)
@@ -90,7 +90,7 @@ async fn update_post(
     service: web::Data<BlogService<PostgresPostRepository>>,
     path: web::Path<Uuid>,
     user: AuthenticatedUser,
-    payload: web::Json<UpdatePostRequest>
+    payload: web::Json<ModifyPostRequest>
 ) -> Result<HttpResponse, BlogError> {
     let id = path.into_inner();
     let req = payload.into_inner();

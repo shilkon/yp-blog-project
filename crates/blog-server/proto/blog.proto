@@ -5,10 +5,10 @@ package blog;
 // Сервис биржи
 service BlogService {
   // Регистрация
-  rpc Register(RegisterRequest) returns (UserResponse);
+  rpc Register(RegisterRequest) returns (AuthResponse);
 
   // Логин
-  rpc Login(LoginRequest) returns (UserResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
 
   // Создание поста
   rpc CreatePost(CreatePostRequest) returns (Post);
@@ -74,7 +74,7 @@ message Post {
   int64 updated_at = 6;
 }
 
-message UserResponse {
+message AuthResponse {
   string token = 1;
   User user = 2;
 }
