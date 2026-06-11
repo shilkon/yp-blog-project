@@ -4,8 +4,9 @@ use argon2::{
     Argon2,
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use crate::domain::user::Claims;
 
 #[derive(Clone)]
 pub struct JwtKeys {
@@ -41,13 +42,6 @@ impl JwtKeys {
         )?;
         Ok(data.claims)
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Claims {
-    pub user_id: String,
-    pub username: String,
-    pub exp: usize,
 }
 
 pub fn hash_password(password: &str) -> Result<String, argon2::password_hash::Error> {

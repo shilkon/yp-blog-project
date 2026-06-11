@@ -1,14 +1,16 @@
+use std::net::IpAddr;
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
-    pub host: String,
-    pub port: u16,
+    pub host: IpAddr,
+    pub http_port: u16,
+    pub grpc_port: u16,
     pub database_url: String,
     pub jwt_secret: String,
     #[serde(default)]
     pub cors_origins: Vec<String>,
-    // pub exchange_api_url: String,
 }
 
 impl AppConfig {
@@ -16,16 +18,18 @@ impl AppConfig {
         dotenvy::dotenv().ok();
 
         let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into());
-        let port = std::env::var("PORT")
+        let http_port = std::env::var("HTTP_PORT")
             .unwrap_or_else(|_| "8080".into())
             .parse()
-            .map_err(|e| anyhow::anyhow!("invalid PORT: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("invalid HTTP_PORT: {}", e))?;
+        let grpc_port = std::env::var("GRPC_PORT")
+            .unwrap_or_else(|_| "50051".into())
+            .parse()
+            .map_err(|e| anyhow::anyhow!("invalid GRPC_PORT: {}", e))?;
         let database_url = std::env::var("DATABASE_URL")
             .map_err(|_| anyhow::anyhow!("DATABASE_URL must be set"))?;
         let jwt_secret = std::env::var("JWT_SECRET")
             .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?;
-        let exchange_api_url = std::env::var("EXCHANGE_API_URL")
-            .unwrap_or_else(|_| "https://api.exchangerate-api.com/v4/latest".into());
         let cors_origins = std::env::var("CORS_ORIGINS")
             .unwrap_or_else(|_| "*".into())
             .split(',')
@@ -34,12 +38,12 @@ impl AppConfig {
             .collect();
 
         Ok(Self {
-            host,
-            port,
+            host: host.parse()?,
+            http_port,
+            grpc_port,
             database_url,
             jwt_secret,
             cors_origins,
-            // exchange_api_url,
         })
     }
 }

@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_json::json;
 use thiserror::Error;
 use uuid::Uuid;
+use tonic::Status;
 
 #[derive(Debug, Error)]
 #[allow(dead_code)]
@@ -82,8 +83,21 @@ impl From<DomainError> for BlogError {
             DomainError::Validation(msg) => BlogError::Validation(msg),
             DomainError::UserNotFound(id) => BlogError::NotFound(format!("user {}", id)),
             DomainError::UserAlreadyExists(id) => BlogError::Conflict(format!("user {}", id)),
-            DomainError::PostNotFound(id) => BlogError::NotFound(format!("user {}", id)),
+            DomainError::PostNotFound(id) => BlogError::NotFound(format!("post {}", id)),
             DomainError::Internal(msg) => BlogError::Internal(msg),
+        }
+    }
+}
+
+impl From<BlogError> for Status {
+    fn from(value: BlogError) -> Self {
+        match value {
+            BlogError::Validation(msg) => Status::invalid_argument(msg),
+            BlogError::Unauthorized => Status::unauthenticated(""),
+            BlogError::Forbidden(resource) => Status::permission_denied(resource),
+            BlogError::NotFound(resource) => Status::not_found(resource),
+            BlogError::Conflict(resource) => Status::failed_precondition(resource),
+            BlogError::Internal(msg) => Status::internal(msg),
         }
     }
 }

@@ -1,9 +1,10 @@
 use sqlx::{PgPool, Row, postgres::PgRow};
-use tracing::{error, info};
+use tracing::error;
 use uuid::Uuid;
 
 use crate::domain::{post::Post, error::DomainError};
 
+#[async_trait::async_trait]
 pub trait PostRepository: Send + Sync {
     async fn create(&self, post: Post) -> Result<Post, DomainError>;
     async fn get(&self, id: Uuid) -> Result<Option<Post>, DomainError>;
@@ -44,8 +45,9 @@ impl PostgresPostRepository {
     }
 }
 
+#[async_trait::async_trait]
 impl PostRepository for PostgresPostRepository {
-    async fn create(&self, mut post: Post) -> Result<Post, DomainError> {
+    async fn create(&self, post: Post) -> Result<Post, DomainError> {
         let row = sqlx::query(
             r#"
             INSERT INTO posts (id, author_id, title, content)

@@ -18,7 +18,7 @@ async fn register(
     payload: web::Json<RegisterRequest>,
 ) -> Result<impl Responder, BlogError> {
     let user = service
-        .register(payload.username.clone(), payload.email.clone(), payload.password.clone())
+        .register(&payload.username, &payload.email, &payload.password)
         .await?;
 
     info!(user_id = %user.id, username = %user.username, email = %user.email, "user registered");

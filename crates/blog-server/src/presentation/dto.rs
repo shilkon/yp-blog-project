@@ -1,6 +1,4 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::domain::{post::Post, user::User};
 
@@ -49,29 +47,6 @@ pub struct GetPostsRequest {
 
 fn default_limit() -> i64 { DEFAULT_LIMIT }
 fn default_offset() -> i64 { DEFAULT_OFFSET }
-
-#[derive(Debug, Serialize)]
-pub struct PostResponse {
-    pub id: Uuid,
-    pub author_id: Uuid,
-    pub title: String,
-    pub content: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-impl From<Post> for PostResponse {
-    fn from(post: Post) -> Self {
-        Self {
-            id: post.id,
-            author_id: post.author_id,
-            title: post.title,
-            content: post.content,
-            created_at: post.created_at,
-            updated_at: post.updated_at
-        }
-    }
-}
 
 #[derive(Debug, Serialize)]
 pub struct PostsResponse {

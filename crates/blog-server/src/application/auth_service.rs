@@ -29,8 +29,8 @@ where
     }
 
     #[instrument(skip(self))]
-    pub async fn register(&self, username: String, email: String, password: String) -> Result<User, BlogError> {
-        let hash = hash_password(&password).map_err(|err| BlogError::Internal(err.to_string()))?;
+    pub async fn register(&self, username: &str, email: &str, password: &str) -> Result<User, BlogError> {
+        let hash = hash_password(password).map_err(|err| BlogError::Internal(err.to_string()))?;
         let user = User::new(username.to_lowercase(), email.to_lowercase(), hash);
         self.repo.create(user).await.map_err(BlogError::from)
     }

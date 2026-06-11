@@ -7,9 +7,10 @@ use crate::domain::error::BlogError;
 use crate::application::blog_service::BlogService;
 // use crate::application::exchange_service::ExchangeService;
 use crate::data::post_repository::PostgresPostRepository;
-use crate::presentation::middleware::{AuthenticatedUser, jwt_validator};
+use crate::domain::user::AuthenticatedUser;
+use crate::presentation::middleware::jwt_validator;
 use crate::presentation::dto::{
-    CreatePostRequest, GetPostsRequest, PostResponse, PostsResponse, UpdatePostRequest
+    CreatePostRequest, GetPostsRequest, PostsResponse, UpdatePostRequest
 };
 
 pub fn scope() -> Scope {
@@ -38,7 +39,7 @@ async fn get_post(
         "post fetched"
     );
 
-    Ok(HttpResponse::Ok().json(PostResponse::from(post)))
+    Ok(HttpResponse::Ok().json(post))
 }
 
 #[get("")]
@@ -81,7 +82,7 @@ async fn create_post(
         "post created"
     );
 
-    Ok(HttpResponse::Created().json(PostResponse::from(post)))
+    Ok(HttpResponse::Created().json(post))
 }
 
 #[put("/{id}")]
@@ -101,7 +102,7 @@ async fn update_post(
         "post updated"
     );
 
-    Ok(HttpResponse::Ok().json(PostResponse::from(post)))
+    Ok(HttpResponse::Ok().json(post))
 }
 
 #[delete("{id}")]
