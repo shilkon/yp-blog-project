@@ -19,6 +19,7 @@ tonic = { workspace = true }
 tonic-prost = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
+enum_dispatch = "0.3"
 
 [build-dependencies]
 tonic-prost-build = { workspace = true }

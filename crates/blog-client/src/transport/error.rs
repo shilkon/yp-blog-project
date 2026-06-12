@@ -8,6 +8,10 @@ pub enum TransportError {
     Reqwest(String),
     #[error("tonic error: {0}")]
     Tonic(String),
+    #[error("invalid response: {0}")]
+    Response(String),
+    #[error("invalid token")]
+    Token
 }
 
 impl From<reqwest::Error> for TransportError {

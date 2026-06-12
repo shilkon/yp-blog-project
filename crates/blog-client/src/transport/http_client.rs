@@ -1,11 +1,31 @@
 use reqwest::Client;
+use serde::Serialize;
 use tracing::error;
 
 use super::error::TransportError;
 use super::BlogClientTransport;
-use super::dto::{RegisterRequest, LoginRequest, ModifyPostRequest, AuthResponse, Post, PostsResponse};
+use super::{AuthResponse, Post, PostsResponse};
 
-struct HttpClient {
+#[derive(Debug, Serialize)]
+pub struct RegisterRequest {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginRequest {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ModifyPostRequest {
+    pub title: String,
+    pub content: String,
+}
+
+pub struct HttpClient {
     client: Client,
     base_url: String
 }
@@ -86,7 +106,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn create_post(&mut self, token: String, title: &str, content: &str) -> Result<Post, TransportError> {
+    async fn create_post(&mut self, token: &str, title: &str, content: &str) -> Result<Post, TransportError> {
         let body = ModifyPostRequest {
             title: title.to_string(),
             content: content.to_string()
@@ -107,7 +127,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn update_post(&mut self, token: String, id: uuid::Uuid, title: &str, content: &str) -> Result<Post, TransportError> {
+    async fn update_post(&mut self, token: &str, id: uuid::Uuid, title: &str, content: &str) -> Result<Post, TransportError> {
         let body = ModifyPostRequest {
             title: title.to_string(),
             content: content.to_string()
@@ -128,7 +148,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn delete_post(&mut self, token: String, id: uuid::Uuid) -> Result<(), TransportError> {
+    async fn delete_post(&mut self, token: &str, id: uuid::Uuid) -> Result<(), TransportError> {
         let resp = self.client
             .delete(format!("{}/posts/{}", self.base_url, id))
             .bearer_auth(token)
