@@ -52,13 +52,16 @@ pub enum Transport {
 
 #[enum_dispatch]
 pub trait BlogClientTransport {
-    async fn register(&mut self, username: &str, email: &str, password: &str) -> Result<AuthResponse, TransportError>;
-    async fn login(&mut self, username: &str, password: &str) -> Result<AuthResponse, TransportError>;
+    fn set_token(&mut self, token: String);
+    fn get_token(&self) -> Option<String>;
+
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError>;
+    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError>;
 
     async fn get_post(&mut self, id: Uuid) -> Result<Post, TransportError>;
     async fn list_posts(&mut self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError>;
 
-    async fn create_post(&mut self, token: &str, title: &str, content: &str) -> Result<Post, TransportError>;
-    async fn update_post(&mut self, token: &str, id: Uuid, title: &str, content: &str) -> Result<Post, TransportError>;
-    async fn delete_post(&mut self, token: &str, id: Uuid) -> Result<(), TransportError>;
+    async fn create_post(&mut self, title: String, content: String) -> Result<Post, TransportError>;
+    async fn update_post(&mut self, id: Uuid, title: String, content: String) -> Result<Post, TransportError>;
+    async fn delete_post(&mut self, id: Uuid) -> Result<(), TransportError>;
 }

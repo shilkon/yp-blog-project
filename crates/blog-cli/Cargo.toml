@@ -3,4 +3,13 @@ name = "blog-cli"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "blog_cli"
+path = "src/main.rs"
+
 [dependencies]
+anyhow = "1.0"
+blog-client = { path = "../blog-client" }
+clap = { version = "4.6", features = ["derive"] }
+tokio = { workspace = true }
+uuid = { workspace = true }

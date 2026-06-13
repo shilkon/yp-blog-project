@@ -22,6 +22,7 @@ target
 
 /.env
 /.cargo/
+/.blog_token
 
 # Added by cargo
 

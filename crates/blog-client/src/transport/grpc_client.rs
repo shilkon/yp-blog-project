@@ -10,18 +10,21 @@ use crate::blog_proto::blog_service_client::BlogServiceClient;
 
 pub struct GrpcClient {
     client: BlogServiceClient<tonic::transport::Channel>,
+    token: Option<String>
 }
 
 impl GrpcClient {
-    pub async fn connect(addr: String) -> Result<Self, Box<dyn std::error::Error>> {
-        let client = BlogServiceClient::connect(addr).await?;
-        Ok(Self { client })
+    pub async fn connect(addr: String) -> Result<Self, tonic::transport::Error> {
+        Ok(Self {
+            client: BlogServiceClient::connect(addr).await?,
+            token: None
+        })
     }
 
-    fn add_token(meta: &mut MetadataMap, token: &str) -> Result<(), TransportError> {
+    fn add_token(&self, meta: &mut MetadataMap) -> Result<(), TransportError> {
         meta.insert(
             "authorization",
-            format!("Bearer {token}")
+            format!("Bearer {}", self.token.as_ref().ok_or_else(|| TransportError::Token)?)
                 .parse()
                 .map_err(|_| TransportError::Token)?
         );
@@ -31,21 +34,26 @@ impl GrpcClient {
 }
 
 impl BlogClientTransport for GrpcClient {
-    async fn register(&mut self, username: &str, email: &str, password: &str) -> Result<super::AuthResponse, TransportError> {
+    fn set_token(&mut self, token: String) {
+        self.token = Some(token);
+    }
+
+    fn get_token(&self) -> Option<String> {
+        self.token.clone()
+    }
+
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::RegisterRequest {
-            username: username.to_string(),
-            email: email.to_string(),
-            password: password.to_string()
+            username, email, password
         });
 
         let response = self.client.register(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn login(&mut self, username: &str, password: &str) -> Result<super::AuthResponse, TransportError> {
+    async fn login(&mut self, username: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::LoginRequest {
-            username: username.to_string(),
-            password: password.to_string()
+            username, password
         });
 
         let response = self.client.login(request).await?;
@@ -70,34 +78,31 @@ impl BlogClientTransport for GrpcClient {
         response.into_inner().try_into()
     }
 
-    async fn create_post(&mut self, token: &str, title: &str, content: &str) -> Result<super::Post, TransportError> {
+    async fn create_post(&mut self, title: String, content: String) -> Result<super::Post, TransportError> {
         let mut request = Request::new(blog_proto::CreatePostRequest {
-            title: title.to_string(),
-            content: content.to_string()
+            title, content
         });
-        Self::add_token(request.metadata_mut(), &token)?;
+        self.add_token(request.metadata_mut())?;
 
         let response = self.client.create_post(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn update_post(&mut self, token: &str, id: uuid::Uuid, title: &str, content: &str) -> Result<super::Post, TransportError> {
+    async fn update_post(&mut self, id: uuid::Uuid, title: String, content: String) -> Result<super::Post, TransportError> {
         let mut request = Request::new(blog_proto::UpdatePostRequest {
-            id: id.to_string(),
-            title: title.to_string(),
-            content: content.to_string()
+            id: id.to_string(), title, content
         });
-        Self::add_token(request.metadata_mut(), &token)?;
+        self.add_token(request.metadata_mut())?;
 
         let response = self.client.update_post(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn delete_post(&mut self, token: &str, id: uuid::Uuid) -> Result<(), TransportError> {
+    async fn delete_post(&mut self, id: uuid::Uuid) -> Result<(), TransportError> {
         let mut request = Request::new(blog_proto::PostIdRequest {
             id: id.to_string(),
         });
-        Self::add_token(request.metadata_mut(), &token)?;
+        self.add_token(request.metadata_mut())?;
 
         self.client.delete_post(request).await?;
         Ok(())

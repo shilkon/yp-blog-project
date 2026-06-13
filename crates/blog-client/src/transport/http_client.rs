@@ -27,25 +27,34 @@ pub struct ModifyPostRequest {
 
 pub struct HttpClient {
     client: Client,
-    base_url: String
+    url: String,
+    token: Option<String>
 }
 
 impl HttpClient {
-    pub fn new(client: Client, base_url: String) -> Self {
-        Self { client, base_url }
+    pub fn new(url: String) -> reqwest::Result<Self> {
+        Ok(Self {
+            client: Client::builder().build()?,
+            url,
+            token: None
+        })
     }
 }
 
 impl BlogClientTransport for HttpClient {
-    async fn register(&mut self, username: &str, email: &str, password: &str) -> Result<AuthResponse, TransportError> {
-        let body = RegisterRequest {
-            username: username.to_string(),
-            email: email.to_string(),
-            password: password.to_string()
-        };
+    fn set_token(&mut self, token: String) {
+        self.token = Some(token);
+    }
+
+    fn get_token(&self) -> Option<String> {
+        self.token.clone()
+    }
+
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError> {
+        let body = RegisterRequest { username, email, password };
 
         let resp = self.client
-            .post(format!("{}/auth/register", self.base_url))
+            .post(format!("{}/auth/register", self.url))
             .json(&body)
             .send()
             .await?;
@@ -58,14 +67,11 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn login(&mut self, username: &str, password: &str) -> Result<AuthResponse, TransportError> {
-        let body = LoginRequest {
-            username: username.to_string(),
-            password: password.to_string()
-        };
+    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError> {
+        let body = LoginRequest { username, password };
 
         let resp = self.client
-            .post(format!("{}/auth/login", self.base_url))
+            .post(format!("{}/auth/login", self.url))
             .json(&body)
             .send()
             .await?;
@@ -80,7 +86,7 @@ impl BlogClientTransport for HttpClient {
 
     async fn get_post(&mut self, id: uuid::Uuid) -> Result<Post, TransportError> {
         let resp = self.client
-            .get(format!("{}/posts/{}", self.base_url, id))
+            .get(format!("{}/posts/{}", self.url, id))
             .send()
             .await?;
 
@@ -94,7 +100,7 @@ impl BlogClientTransport for HttpClient {
 
     async fn list_posts(&mut self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError> {
         let resp = self.client
-            .get(format!("{}/posts?limit={}&offset{}", self.base_url, limit, offset))
+            .get(format!("{}/posts?limit={}&offset{}", self.url, limit, offset))
             .send()
             .await?;
 
@@ -106,15 +112,12 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn create_post(&mut self, token: &str, title: &str, content: &str) -> Result<Post, TransportError> {
-        let body = ModifyPostRequest {
-            title: title.to_string(),
-            content: content.to_string()
-        };
+    async fn create_post(&mut self, title: String, content: String) -> Result<Post, TransportError> {
+        let body = ModifyPostRequest { title, content };
 
         let resp = self.client
-            .post(format!("{}/posts", self.base_url))
-            .bearer_auth(token)
+            .post(format!("{}/posts", self.url))
+            .bearer_auth(self.token.as_ref().ok_or_else(|| TransportError::Token)?)
             .json(&body)
             .send()
             .await?;
@@ -127,15 +130,12 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn update_post(&mut self, token: &str, id: uuid::Uuid, title: &str, content: &str) -> Result<Post, TransportError> {
-        let body = ModifyPostRequest {
-            title: title.to_string(),
-            content: content.to_string()
-        };
+    async fn update_post(&mut self, id: uuid::Uuid, title: String, content: String) -> Result<Post, TransportError> {
+        let body = ModifyPostRequest { title, content };
 
         let resp = self.client
-            .put(format!("{}/posts/{}", self.base_url, id))
-            .bearer_auth(token)
+            .put(format!("{}/posts/{}", self.url, id))
+            .bearer_auth(self.token.as_ref().ok_or_else(|| TransportError::Token)?)
             .json(&body)
             .send()
             .await?;
@@ -148,10 +148,10 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn delete_post(&mut self, token: &str, id: uuid::Uuid) -> Result<(), TransportError> {
+    async fn delete_post(&mut self, id: uuid::Uuid) -> Result<(), TransportError> {
         let resp = self.client
-            .delete(format!("{}/posts/{}", self.base_url, id))
-            .bearer_auth(token)
+            .delete(format!("{}/posts/{}", self.url, id))
+            .bearer_auth(self.token.as_ref().ok_or_else(|| TransportError::Token)?)
             .send()
             .await?;
 

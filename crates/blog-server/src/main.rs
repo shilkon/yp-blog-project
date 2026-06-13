@@ -30,7 +30,6 @@ use crate::blog_proto::blog_service_server::BlogServiceServer;
 use crate::data::post_repository::PostRepository;
 use crate::data::user_repository::UserRepository;
 use crate::presentation::grpc::blog_service::BlogGrpcService;
-// use reqwest::Client;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
