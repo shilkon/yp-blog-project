@@ -1,5 +1,7 @@
 mod error;
 mod http_client;
+
+#[cfg(feature = "grpc")]
 mod grpc_client;
 
 use chrono::{DateTime, Utc};
@@ -9,6 +11,8 @@ use uuid::Uuid;
 
 pub use error::TransportError;
 pub use http_client::HttpClient;
+
+#[cfg(feature = "grpc")]
 pub use grpc_client::GrpcClient;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -47,6 +51,8 @@ pub struct PostsResponse {
 #[enum_dispatch(BlogClientTransport)]
 pub enum Transport {
     Http(HttpClient),
+
+    #[cfg(feature = "grpc")]
     Grpc(GrpcClient)
 }
 

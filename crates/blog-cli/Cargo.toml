@@ -9,7 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0"
-blog-client = { path = "../blog-client" }
+blog-client = { path = "../blog-client", features = ["grpc"] }
 clap = { version = "4.6", features = ["derive"] }
 tokio = { workspace = true }
 uuid = { workspace = true }

@@ -1,3 +1,5 @@
+#![cfg(feature = "grpc")]
+
 use chrono::DateTime;
 use tonic::Request;
 use tonic::metadata::MetadataMap;
