@@ -50,7 +50,7 @@ impl BlogClientTransport for HttpClient {
         self.token.clone()
     }
 
-    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError> {
+    async fn register(&self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError> {
         let body = RegisterRequest { username, email, password };
 
         let resp = self.client
@@ -67,7 +67,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError> {
+    async fn login(&self, username: String, password: String) -> Result<AuthResponse, TransportError> {
         let body = LoginRequest { username, password };
 
         let resp = self.client
@@ -84,7 +84,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn get_post(&mut self, id: uuid::Uuid) -> Result<Post, TransportError> {
+    async fn get_post(&self, id: uuid::Uuid) -> Result<Post, TransportError> {
         let resp = self.client
             .get(format!("{}/posts/{}", self.url, id))
             .send()
@@ -98,7 +98,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn list_posts(&mut self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError> {
+    async fn list_posts(&self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError> {
         let resp = self.client
             .get(format!("{}/posts?limit={}&offset{}", self.url, limit, offset))
             .send()
@@ -112,7 +112,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn create_post(&mut self, title: String, content: String) -> Result<Post, TransportError> {
+    async fn create_post(&self, title: String, content: String) -> Result<Post, TransportError> {
         let body = ModifyPostRequest { title, content };
 
         let resp = self.client
@@ -130,7 +130,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn update_post(&mut self, id: uuid::Uuid, title: String, content: String) -> Result<Post, TransportError> {
+    async fn update_post(&self, id: uuid::Uuid, title: String, content: String) -> Result<Post, TransportError> {
         let body = ModifyPostRequest { title, content };
 
         let resp = self.client
@@ -148,7 +148,7 @@ impl BlogClientTransport for HttpClient {
         Ok(resp.json().await?)
     }
 
-    async fn delete_post(&mut self, id: uuid::Uuid) -> Result<(), TransportError> {
+    async fn delete_post(&self, id: uuid::Uuid) -> Result<(), TransportError> {
         let resp = self.client
             .delete(format!("{}/posts/{}", self.url, id))
             .bearer_auth(self.token.as_ref().ok_or_else(|| TransportError::Token)?)

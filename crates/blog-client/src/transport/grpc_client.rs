@@ -44,69 +44,69 @@ impl BlogClientTransport for GrpcClient {
         self.token.clone()
     }
 
-    async fn register(&mut self, username: String, email: String, password: String) -> Result<super::AuthResponse, TransportError> {
+    async fn register(&self, username: String, email: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::RegisterRequest {
             username, email, password
         });
 
-        let response = self.client.register(request).await?;
+        let response = self.client.clone().register(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn login(&mut self, username: String, password: String) -> Result<super::AuthResponse, TransportError> {
+    async fn login(&self, username: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::LoginRequest {
             username, password
         });
 
-        let response = self.client.login(request).await?;
+        let response = self.client.clone().login(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn get_post(&mut self, id: uuid::Uuid) -> Result<super::Post, TransportError> {
+    async fn get_post(&self, id: uuid::Uuid) -> Result<super::Post, TransportError> {
         let request = Request::new( blog_proto::PostIdRequest {
             id: id.to_string()
         });
 
-        let response = self.client.get_post(request).await?;
+        let response = self.client.clone().get_post(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn list_posts(&mut self, limit: i64, offset: i64) -> Result<super::PostsResponse, TransportError> {
+    async fn list_posts(&self, limit: i64, offset: i64) -> Result<super::PostsResponse, TransportError> {
         let request = Request::new( blog_proto::ListPostsRequest {
             limit, offset
         });
 
-        let response = self.client.list_posts(request).await?;
+        let response = self.client.clone().list_posts(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn create_post(&mut self, title: String, content: String) -> Result<super::Post, TransportError> {
+    async fn create_post(&self, title: String, content: String) -> Result<super::Post, TransportError> {
         let mut request = Request::new(blog_proto::CreatePostRequest {
             title, content
         });
         self.add_token(request.metadata_mut())?;
 
-        let response = self.client.create_post(request).await?;
+        let response = self.client.clone().create_post(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn update_post(&mut self, id: uuid::Uuid, title: String, content: String) -> Result<super::Post, TransportError> {
+    async fn update_post(&self, id: uuid::Uuid, title: String, content: String) -> Result<super::Post, TransportError> {
         let mut request = Request::new(blog_proto::UpdatePostRequest {
             id: id.to_string(), title, content
         });
         self.add_token(request.metadata_mut())?;
 
-        let response = self.client.update_post(request).await?;
+        let response = self.client.clone().update_post(request).await?;
         response.into_inner().try_into()
     }
 
-    async fn delete_post(&mut self, id: uuid::Uuid) -> Result<(), TransportError> {
+    async fn delete_post(&self, id: uuid::Uuid) -> Result<(), TransportError> {
         let mut request = Request::new(blog_proto::PostIdRequest {
             id: id.to_string(),
         });
         self.add_token(request.metadata_mut())?;
 
-        self.client.delete_post(request).await?;
+        self.client.clone().delete_post(request).await?;
         Ok(())
     }
 }

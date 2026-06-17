@@ -40,7 +40,7 @@ pub struct Post {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct PostsResponse {
     pub posts: Vec<Post>,
     pub total: u64,
@@ -61,13 +61,13 @@ pub trait BlogClientTransport {
     fn set_token(&mut self, token: String);
     fn get_token(&self) -> Option<String>;
 
-    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError>;
-    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError>;
+    async fn register(&self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError>;
+    async fn login(&self, username: String, password: String) -> Result<AuthResponse, TransportError>;
 
-    async fn get_post(&mut self, id: Uuid) -> Result<Post, TransportError>;
-    async fn list_posts(&mut self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError>;
+    async fn get_post(&self, id: Uuid) -> Result<Post, TransportError>;
+    async fn list_posts(&self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError>;
 
-    async fn create_post(&mut self, title: String, content: String) -> Result<Post, TransportError>;
-    async fn update_post(&mut self, id: Uuid, title: String, content: String) -> Result<Post, TransportError>;
-    async fn delete_post(&mut self, id: Uuid) -> Result<(), TransportError>;
+    async fn create_post(&self, title: String, content: String) -> Result<Post, TransportError>;
+    async fn update_post(&self, id: Uuid, title: String, content: String) -> Result<Post, TransportError>;
+    async fn delete_post(&self, id: Uuid) -> Result<(), TransportError>;
 }
