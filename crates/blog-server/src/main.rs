@@ -105,16 +105,9 @@ where
 }
 
 fn build_cors(config: &AppConfig) -> Cors {
-    let mut cors = Cors::default()
+    Cors::default()
         .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
         .allow_any_origin()
         .allow_any_header()
-        .supports_credentials()
-        .max_age(3600);
-
-    for origin in &config.cors_origins {
-        cors = cors.allowed_origin(origin);
-    }
-
-    cors
+        .max_age(3600)
 }

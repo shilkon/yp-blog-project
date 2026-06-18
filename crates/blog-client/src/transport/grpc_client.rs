@@ -44,22 +44,28 @@ impl BlogClientTransport for GrpcClient {
         self.token.clone()
     }
 
-    async fn register(&self, username: String, email: String, password: String) -> Result<super::AuthResponse, TransportError> {
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::RegisterRequest {
             username, email, password
         });
 
         let response = self.client.clone().register(request).await?;
-        response.into_inner().try_into()
+        let auth_response: super::AuthResponse = response.into_inner().try_into()?;
+
+        self.set_token(auth_response.token.clone());
+        Ok(auth_response)
     }
 
-    async fn login(&self, username: String, password: String) -> Result<super::AuthResponse, TransportError> {
+    async fn login(&mut self, username: String, password: String) -> Result<super::AuthResponse, TransportError> {
         let request = Request::new(blog_proto::LoginRequest {
             username, password
         });
 
         let response = self.client.clone().login(request).await?;
-        response.into_inner().try_into()
+        let auth_response: super::AuthResponse = response.into_inner().try_into()?;
+
+        self.set_token(auth_response.token.clone());
+        Ok(auth_response)
     }
 
     async fn get_post(&self, id: uuid::Uuid) -> Result<super::Post, TransportError> {

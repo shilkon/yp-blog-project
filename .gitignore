@@ -23,7 +23,6 @@ target
 /.env
 /.cargo/
 /.blog_token
-/crates/blog-wasm/dist/
 
 # Added by cargo
 

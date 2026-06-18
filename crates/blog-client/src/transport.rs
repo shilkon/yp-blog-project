@@ -6,7 +6,7 @@ mod grpc_client;
 
 use chrono::{DateTime, Utc};
 use enum_dispatch::enum_dispatch;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub use error::TransportError;
@@ -15,13 +15,13 @@ pub use http_client::HttpClient;
 #[cfg(feature = "grpc")]
 pub use grpc_client::GrpcClient;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthResponse {
     pub token: String,
     pub user: User,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub username: String,
@@ -30,7 +30,7 @@ pub struct User {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Post {
     pub id: Uuid,
     pub author_id: Uuid,
@@ -40,7 +40,7 @@ pub struct Post {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PostsResponse {
     pub posts: Vec<Post>,
     pub total: u64,
@@ -61,8 +61,8 @@ pub trait BlogClientTransport {
     fn set_token(&mut self, token: String);
     fn get_token(&self) -> Option<String>;
 
-    async fn register(&self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError>;
-    async fn login(&self, username: String, password: String) -> Result<AuthResponse, TransportError>;
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError>;
+    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError>;
 
     async fn get_post(&self, id: Uuid) -> Result<Post, TransportError>;
     async fn list_posts(&self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError>;

@@ -50,7 +50,7 @@ impl BlogClientTransport for HttpClient {
         self.token.clone()
     }
 
-    async fn register(&self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError> {
+    async fn register(&mut self, username: String, email: String, password: String) -> Result<AuthResponse, TransportError> {
         let body = RegisterRequest { username, email, password };
 
         let resp = self.client
@@ -64,10 +64,13 @@ impl BlogClientTransport for HttpClient {
             return Err(TransportError::Failed(resp.status().to_string()));
         }
 
-        Ok(resp.json().await?)
+        let auth_resp: AuthResponse = resp.json().await?;
+        self.set_token(auth_resp.token.clone());
+
+        Ok(auth_resp)
     }
 
-    async fn login(&self, username: String, password: String) -> Result<AuthResponse, TransportError> {
+    async fn login(&mut self, username: String, password: String) -> Result<AuthResponse, TransportError> {
         let body = LoginRequest { username, password };
 
         let resp = self.client
@@ -81,7 +84,10 @@ impl BlogClientTransport for HttpClient {
             return Err(TransportError::Failed(resp.status().to_string()));
         }
 
-        Ok(resp.json().await?)
+        let auth_resp: AuthResponse = resp.json().await?;
+        self.set_token(auth_resp.token.clone());
+
+        Ok(auth_resp)
     }
 
     async fn get_post(&self, id: uuid::Uuid) -> Result<Post, TransportError> {
@@ -100,7 +106,7 @@ impl BlogClientTransport for HttpClient {
 
     async fn list_posts(&self, limit: i64, offset: i64) -> Result<PostsResponse, TransportError> {
         let resp = self.client
-            .get(format!("{}/posts?limit={}&offset{}", self.url, limit, offset))
+            .get(format!("{}/posts?limit={}&offset={}", self.url, limit, offset))
             .send()
             .await?;
 

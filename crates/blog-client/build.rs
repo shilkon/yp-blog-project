@@ -1,3 +1,4 @@
+#[cfg(feature = "grpc")]
 use std::env;
 
 #[cfg(not(feature = "grpc"))]
