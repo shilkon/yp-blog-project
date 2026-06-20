@@ -1,5 +1,8 @@
+#![allow(dead_code)]
+
 use blog_client::*;
 use wasm_bindgen::prelude::*;
+use serde_json;
 
 static SERVER_URL: &'static str = "http://localhost:8080/api";
 
@@ -20,6 +23,7 @@ impl BlogApp {
         match self.client.register(username, email, password).await {
             Ok(auth_response) => {
                 self.save_token(&auth_response.token);
+                self.save_user(&auth_response.user);
                 
                 web_sys::console::log_1(&format!("Registered user: {:?}", auth_response.user).into());
                 web_sys::console::log_1(&format!("Token: {}", auth_response.token).into());
@@ -41,6 +45,7 @@ impl BlogApp {
         match self.client.login(username, password).await {
             Ok(auth_response) => {
                 self.save_token(&auth_response.token);
+                self.save_user(&auth_response.user);
 
                 web_sys::console::log_1(&format!("Logged in user: {:?}", auth_response.user).into());
                 web_sys::console::log_1(&format!("Token: {}", auth_response.token).into());
@@ -54,6 +59,32 @@ impl BlogApp {
 
                 Err(JsValue::from_str(&error_msg))
             }
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn logout(&self) -> Result<(), JsValue> {
+        let storage = web_sys::window()
+            .unwrap()
+            .local_storage()
+            .unwrap()
+            .unwrap();
+
+        storage.remove_item("token")
+            .map_err(|e| JsValue::from(e))?;
+
+        storage.remove_item("user")
+            .map_err(|e| JsValue::from(e))?;
+
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn current_user(&self) -> Result<JsValue, JsValue> {
+        match self.load_user() {
+            Some(user) => serde_wasm_bindgen::to_value(&user)
+                .map_err(|e| JsValue::from_str(&e.to_string())),
+            None => Ok(JsValue::NULL),
         }
     }
 
@@ -118,11 +149,11 @@ impl BlogApp {
     }
 
     #[wasm_bindgen]
-    pub async fn delete_post(&mut self, id: String) -> Result<JsValue, JsValue> {
+    pub async fn delete_post(&mut self, id: String) -> Result<(), JsValue> {
         let post_id = uuid::Uuid::parse_str(&id).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
         match self.client.delete_post(post_id).await {
-            Ok(_) => Ok(JsValue::TRUE),
+            Ok(_) => Ok(()),
             Err(e) => {
                 let error_msg = format!("Delete post error: {e}");
                 web_sys::console::error_1(&error_msg.clone().into());
@@ -157,5 +188,30 @@ impl BlogApp {
             .unwrap()
             .get_item("token")
             .unwrap()
+    }
+
+    fn save_user(&self, user: &blog_client::User) {
+        let json = serde_json::to_string(user).unwrap();
+
+        web_sys::window()
+            .unwrap()
+            .local_storage()
+            .unwrap()
+            .unwrap()
+            .set_item("user", &json)
+            .unwrap();
+    }
+
+    fn load_user(&self) -> Option<User> {
+        let storage = web_sys::window()
+            .unwrap()
+            .local_storage()
+            .unwrap()
+            .unwrap();
+
+        let value = storage.get_item("user")
+            .unwrap()?;
+
+        serde_json::from_str(&value).ok()
     }
 }

@@ -9,8 +9,6 @@ pub struct AppConfig {
     pub grpc_port: u16,
     pub database_url: String,
     pub jwt_secret: String,
-    #[serde(default)]
-    pub cors_origins: Vec<String>,
 }
 
 impl AppConfig {
@@ -30,12 +28,6 @@ impl AppConfig {
             .map_err(|_| anyhow::anyhow!("DATABASE_URL must be set"))?;
         let jwt_secret = std::env::var("JWT_SECRET")
             .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?;
-        let cors_origins = std::env::var("CORS_ORIGINS")
-            .unwrap_or_else(|_| "*".into())
-            .split(',')
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty())
-            .collect();
 
         Ok(Self {
             host: host.parse()?,
@@ -43,7 +35,6 @@ impl AppConfig {
             grpc_port,
             database_url,
             jwt_secret,
-            cors_origins,
         })
     }
 }
