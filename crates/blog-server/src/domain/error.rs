@@ -14,12 +14,8 @@ pub enum DomainError {
     UserNotFound(Uuid),
     #[error("user already exists: {0}")]
     UserAlreadyExists(Uuid),
-    // #[error("invalid credentials")]
-    // InvalidCredentials(),
     #[error("post not found: {0}")]
     PostNotFound(Uuid),
-    // #[error("forbidden")]
-    // Forbidden(),
     #[error("internal error: {0}")]
     Internal(String),
 }

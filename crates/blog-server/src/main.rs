@@ -90,7 +90,6 @@ where
             .wrap(cors)
             .app_data(web::Data::new(auth_service.clone()))
             .app_data(web::Data::new(blog_service.clone()))
-            // .app_data(web::Data::new(exchange_service.clone()))
             .service(
                 web::scope("/api")
                     .service(handlers::auth::scope())

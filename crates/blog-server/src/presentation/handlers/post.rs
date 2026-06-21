@@ -5,7 +5,6 @@ use uuid::Uuid;
 
 use crate::domain::error::BlogError;
 use crate::application::blog_service::BlogService;
-// use crate::application::exchange_service::ExchangeService;
 use crate::data::post_repository::PostgresPostRepository;
 use crate::domain::user::AuthenticatedUser;
 use crate::presentation::middleware::jwt_validator;
